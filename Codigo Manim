@@ -1,0 +1,2702 @@
+from manim import *
+
+
+class HashTransactions(Scene):
+    def clean_scene(self, run_time=0.5):
+        objects = list(self.mobjects)
+
+        if objects:
+            self.play(
+                *[
+                    FadeOut(obj)
+                    for obj in objects
+                ],
+                run_time=run_time
+            )
+
+        self.clear()
+
+    def transaction_row(
+        self,
+        tx_id,
+        user,
+        amount,
+        width=8.2,
+        height=0.68
+    ):
+        box = RoundedRectangle(
+            width=width,
+            height=height,
+            corner_radius=0.08,
+            stroke_color="#33445F",
+            stroke_width=1.5,
+            fill_color="#111C30",
+            fill_opacity=1
+        )
+
+        tx = Text(
+            tx_id,
+            font_size=20,
+            color="#59D8E6"
+        )
+
+        usr = Text(
+            user,
+            font_size=20,
+            color="#91A4C0"
+        )
+
+        amt = Text(
+            amount,
+            font_size=20,
+            color="#EAF2FF"
+        )
+
+        tx.move_to(
+            box.get_center()
+            + LEFT * (width * 0.32)
+        )
+
+        usr.move_to(
+            box.get_center()
+        )
+
+        amt.move_to(
+            box.get_center()
+            + RIGHT * (width * 0.30)
+        )
+
+        return VGroup(
+            box,
+            tx,
+            usr,
+            amt
+        )
+
+    def make_bucket_table(
+        self,
+        count=8,
+        width=4.8,
+        height=0.50,
+        scale=1.0
+    ):
+        rows = VGroup()
+        cells = []
+
+        for i in range(count):
+
+            index = Text(
+                str(i),
+                font_size=20,
+                color="#91A4C0"
+            )
+
+            cell = RoundedRectangle(
+                width=width,
+                height=height,
+                corner_radius=0.06,
+                stroke_color="#415574",
+                stroke_width=1.4,
+                fill_color="#111C30",
+                fill_opacity=1
+            )
+
+            row = VGroup(
+                index,
+                cell
+            ).arrange(
+                RIGHT,
+                buff=0.20
+            )
+
+            rows.add(row)
+            cells.append(cell)
+
+        rows.arrange(
+            DOWN,
+            buff=0.07
+        )
+
+        rows.scale(scale)
+
+        return rows, cells
+
+    def make_profile_card(
+        self,
+        user,
+        operations,
+        total,
+        new_accounts,
+        color="#B18CFF"
+    ):
+        box = RoundedRectangle(
+            width=5.1,
+            height=3.0,
+            corner_radius=0.12,
+            stroke_color=color,
+            stroke_width=2,
+            fill_color="#111C30",
+            fill_opacity=1
+        )
+
+        title = Text(
+            user,
+            font_size=27,
+            color="#59D8E6"
+        )
+
+        values = VGroup(
+            Text(
+                f"Operaciones recientes: {operations}",
+                font_size=20,
+                color="#EAF2FF"
+            ),
+            Text(
+                f"Monto reciente: S/{total}",
+                font_size=20,
+                color="#EAF2FF"
+            ),
+            Text(
+                f"Cuentas nuevas: {new_accounts}",
+                font_size=20,
+                color="#EAF2FF"
+            )
+        ).arrange(
+            DOWN,
+            aligned_edge=LEFT,
+            buff=0.22
+        )
+
+        title.next_to(
+            box.get_top(),
+            DOWN,
+            buff=0.34
+        )
+
+        values.next_to(
+            title,
+            DOWN,
+            buff=0.36
+        )
+
+        return VGroup(
+            box,
+            title,
+            values
+        )
+
+    def make_hash_box(
+        self,
+        formula,
+        width=3.4,
+        color="#B18CFF"
+    ):
+        box = RoundedRectangle(
+            width=width,
+            height=1.0,
+            corner_radius=0.1,
+            stroke_color=color,
+            stroke_width=2,
+            fill_color="#111C30",
+            fill_opacity=1
+        )
+
+        label = Text(
+            formula,
+            font_size=25,
+            color=color
+        ).move_to(box)
+
+        return VGroup(
+            box,
+            label
+        )
+
+    def make_operation_card(
+        self,
+        title,
+        description,
+        complexity,
+        color
+    ):
+        box = RoundedRectangle(
+            width=4.0,
+            height=2.05,
+            corner_radius=0.12,
+            stroke_color=color,
+            stroke_width=2,
+            fill_color="#111C30",
+            fill_opacity=1
+        )
+
+        title_text = Text(
+            title,
+            font_size=28,
+            color=color
+        )
+
+        description_text = Text(
+            description,
+            font_size=19,
+            color="#EAF2FF"
+        )
+
+        complexity_text = Text(
+            complexity,
+            font_size=18,
+            color="#91A4C0"
+        )
+
+        content = VGroup(
+            title_text,
+            description_text,
+            complexity_text
+        ).arrange(
+            DOWN,
+            buff=0.18
+        )
+
+        content.move_to(box)
+
+        return VGroup(
+            box,
+            content
+        )
+
+    def construct(self):
+
+        self.camera.background_color = "#08101F"
+
+        BLUE = "#4DA6FF"
+        CYAN = "#59D8E6"
+        WHITE_SOFT = "#EAF2FF"
+        MUTED = "#91A4C0"
+        GREEN = "#63E6BE"
+        YELLOW = "#FFD166"
+        RED = "#FF6B6B"
+        PURPLE = "#B18CFF"
+
+        title = Text(
+            "HASH TABLES",
+            font_size=68,
+            color=BLUE
+        )
+
+        subtitle = Text(
+            "Monitoreo de transacciones en tiempo real",
+            font_size=30,
+            color=WHITE_SOFT
+        ).next_to(
+            title,
+            DOWN,
+            buff=0.28
+        )
+
+        authors = Text(
+            "Itta Saavedra  •  Joaquin Llallire",
+            font_size=23,
+            color=YELLOW
+        ).next_to(
+            subtitle,
+            DOWN,
+            buff=0.38
+        )
+
+        self.play(
+            GrowFromCenter(title),
+            run_time=0.9
+        )
+
+        self.play(
+            FadeIn(subtitle),
+            FadeIn(authors),
+            run_time=0.7
+        )
+
+        self.wait(2.8)
+
+        self.clean_scene(0.6)
+
+        flow_title = Text(
+            "Miles de transacciones ocurren constantemente",
+            font_size=38,
+            color=WHITE_SOFT
+        ).to_edge(
+            UP,
+            buff=0.45
+        )
+
+        self.play(
+            Write(flow_title),
+            run_time=0.8
+        )
+
+        transactions_data = [
+            ("TX-8041", "USER-21", "S/ 45.00"),
+            ("TX-1930", "USER-72", "S/ 120.00"),
+            ("TX-4182", "USER-18", "S/ 350.00"),
+            ("TX-9201", "USER-54", "S/ 18.50"),
+            ("TX-6652", "USER-91", "S/ 600.00"),
+        ]
+
+        transaction_rows = VGroup()
+
+        for tx_id, user, amount in transactions_data:
+
+            row = self.transaction_row(
+                tx_id,
+                user,
+                amount
+            )
+
+            transaction_rows.add(row)
+
+        transaction_rows.arrange(
+            DOWN,
+            buff=0.12
+        )
+
+        transaction_rows.move_to(
+            ORIGIN + DOWN * 0.15
+        )
+
+        for row in transaction_rows:
+
+            row.shift(RIGHT * 7)
+
+            self.play(
+                row.animate.shift(
+                    LEFT * 7
+                ),
+                run_time=0.32
+            )
+
+        self.wait(2.0)
+
+        anomaly_title = Text(
+            "Dentro del flujo pueden aparecer situaciones que requieren atención",
+            font_size=33,
+            color=YELLOW
+        ).to_edge(
+            UP,
+            buff=0.45
+        )
+
+        self.play(
+            Transform(
+                flow_title,
+                anomaly_title
+            ),
+            run_time=0.7
+        )
+
+        original = transaction_rows[2]
+
+        highlight_original = SurroundingRectangle(
+            original,
+            color=RED,
+            buff=0.06,
+            stroke_width=4
+        )
+
+        self.play(
+            Create(highlight_original),
+            run_time=0.5
+        )
+
+        duplicate = original.copy()
+
+        duplicate.next_to(
+            transaction_rows,
+            DOWN,
+            buff=0.28
+        )
+
+        self.play(
+            FadeIn(
+                duplicate,
+                shift=DOWN * 0.2
+            ),
+            run_time=0.6
+        )
+
+        highlight_duplicate = SurroundingRectangle(
+            duplicate,
+            color=RED,
+            buff=0.06,
+            stroke_width=4
+        )
+
+        self.play(
+            Create(highlight_duplicate),
+            run_time=0.45
+        )
+
+        duplicate_question = Text(
+            "¿TX-4182 ya había sido procesada?",
+            font_size=29,
+            color=RED
+        ).to_edge(
+            DOWN,
+            buff=0.28
+        )
+
+        self.play(
+            Write(duplicate_question),
+            run_time=0.7
+        )
+
+        self.wait(3.0)
+
+        self.clean_scene(0.7)
+
+        unusual_title = Text(
+            "También pueden aparecer patrones inusuales",
+            font_size=37,
+            color=YELLOW
+        ).to_edge(
+            UP,
+            buff=0.45
+        )
+
+        self.play(
+            Write(unusual_title),
+            run_time=0.7
+        )
+
+        user_label = Text(
+            "USER-183",
+            font_size=31,
+            color=CYAN
+        )
+
+        user_label.shift(
+            LEFT * 4.7
+        )
+
+        self.play(
+            FadeIn(user_label),
+            run_time=0.4
+        )
+
+        suspicious_data = [
+            ("03:01:02", "S/ 3,000", "Cuenta nueva"),
+            ("03:01:12", "S/ 4,500", "Cuenta nueva"),
+            ("03:01:25", "S/ 6,000", "Cuenta nueva"),
+            ("03:01:41", "S/ 5,000", "Cuenta nueva"),
+        ]
+
+        suspicious_rows = VGroup()
+
+        for time, amount, destination in suspicious_data:
+
+            box = RoundedRectangle(
+                width=7.0,
+                height=0.68,
+                corner_radius=0.08,
+                stroke_color="#33445F",
+                stroke_width=1.5,
+                fill_color="#111C30",
+                fill_opacity=1
+            )
+
+            time_text = Text(
+                time,
+                font_size=19,
+                color=MUTED
+            )
+
+            amount_text = Text(
+                amount,
+                font_size=21,
+                color=WHITE_SOFT
+            )
+
+            destination_text = Text(
+                destination,
+                font_size=19,
+                color=PURPLE
+            )
+
+            time_text.move_to(
+                box.get_center()
+                + LEFT * 2.45
+            )
+
+            amount_text.move_to(
+                box.get_center()
+            )
+
+            destination_text.move_to(
+                box.get_center()
+                + RIGHT * 2.25
+            )
+
+            suspicious_rows.add(
+                VGroup(
+                    box,
+                    time_text,
+                    amount_text,
+                    destination_text
+                )
+            )
+
+        suspicious_rows.arrange(
+            DOWN,
+            buff=0.18
+        )
+
+        suspicious_rows.shift(
+            RIGHT * 1.0
+        )
+
+        for row in suspicious_rows:
+
+            self.play(
+                FadeIn(
+                    row,
+                    shift=RIGHT * 0.25
+                ),
+                run_time=0.34
+            )
+
+        unusual_box = SurroundingRectangle(
+            suspicious_rows,
+            color=YELLOW,
+            buff=0.18,
+            stroke_width=4
+        )
+
+        self.play(
+            Create(unusual_box),
+            run_time=0.5
+        )
+
+        unusual_question = Text(
+            "¿Este comportamiento es normal para USER-183?",
+            font_size=29,
+            color=YELLOW
+        ).to_edge(
+            DOWN,
+            buff=0.3
+        )
+
+        self.play(
+            Write(unusual_question),
+            run_time=0.7
+        )
+
+        self.wait(3.2)
+
+        self.clean_scene(0.7)
+
+        big_question = Text(
+            "¿Cómo accedemos rápidamente a la información\n"
+            "de millones de usuarios y transacciones?",
+            font_size=38,
+            color=WHITE_SOFT,
+            line_spacing=1.2
+        )
+
+        self.play(
+            Write(big_question),
+            run_time=1.0
+        )
+
+        self.wait(3.0)
+
+        self.play(
+            FadeOut(big_question),
+            run_time=0.5
+        )
+
+        hash_title = Text(
+            "HASH TABLES",
+            font_size=72,
+            color=BLUE
+        )
+
+        hash_subtitle = Text(
+            "acceso mediante claves",
+            font_size=30,
+            color=WHITE_SOFT
+        ).next_to(
+            hash_title,
+            DOWN,
+            buff=0.3
+        )
+
+        self.play(
+            GrowFromCenter(hash_title),
+            run_time=0.8
+        )
+
+        self.play(
+            FadeIn(hash_subtitle),
+            run_time=0.5
+        )
+
+        self.wait(2.6)
+
+        self.clean_scene(0.6)
+
+        structure_title = Text(
+            "El mismo flujo puede alimentar distintas Hash Tables",
+            font_size=36,
+            color=WHITE_SOFT
+        ).to_edge(
+            UP,
+            buff=0.42
+        )
+
+        self.play(
+            Write(structure_title),
+            run_time=0.8
+        )
+
+        users_box = RoundedRectangle(
+            width=5.4,
+            height=4.1,
+            corner_radius=0.12,
+            stroke_color=CYAN,
+            stroke_width=2,
+            fill_color="#111C30",
+            fill_opacity=1
+        )
+
+        users_box.shift(
+            LEFT * 3.15
+            + DOWN * 0.15
+        )
+
+        users_title = Text(
+            "Hash Table de usuarios",
+            font_size=26,
+            color=CYAN
+        ).next_to(
+            users_box.get_top(),
+            DOWN,
+            buff=0.33
+        )
+
+        users_content = VGroup(
+            Text(
+                "KEY: USER-ID",
+                font_size=22,
+                color=YELLOW
+            ),
+            Text(
+                "VALUE: perfil reciente",
+                font_size=21,
+                color=WHITE_SOFT
+            ),
+            Text(
+                "USER-183  →  perfil",
+                font_size=21,
+                color=CYAN
+            ),
+            Text(
+                "USER-191  →  perfil",
+                font_size=21,
+                color=CYAN
+            )
+        ).arrange(
+            DOWN,
+            aligned_edge=LEFT,
+            buff=0.34
+        )
+
+        users_content.next_to(
+            users_title,
+            DOWN,
+            buff=0.45
+        )
+
+        users_group = VGroup(
+            users_box,
+            users_title,
+            users_content
+        )
+
+        tx_box = RoundedRectangle(
+            width=5.4,
+            height=4.1,
+            corner_radius=0.12,
+            stroke_color=PURPLE,
+            stroke_width=2,
+            fill_color="#111C30",
+            fill_opacity=1
+        )
+
+        tx_box.shift(
+            RIGHT * 3.15
+            + DOWN * 0.15
+        )
+
+        tx_title = Text(
+            "Hash Table de transacciones",
+            font_size=25,
+            color=PURPLE
+        ).next_to(
+            tx_box.get_top(),
+            DOWN,
+            buff=0.33
+        )
+
+        tx_content = VGroup(
+            Text(
+                "KEY: TX-ID",
+                font_size=22,
+                color=YELLOW
+            ),
+            Text(
+                "VALUE: estado de procesamiento",
+                font_size=20,
+                color=WHITE_SOFT
+            ),
+            Text(
+                "TX-4182  →  PROCESADA",
+                font_size=20,
+                color=PURPLE
+            ),
+            Text(
+                "TX-9917  →  PROCESADA",
+                font_size=20,
+                color=PURPLE
+            )
+        ).arrange(
+            DOWN,
+            aligned_edge=LEFT,
+            buff=0.34
+        )
+
+        tx_content.next_to(
+            tx_title,
+            DOWN,
+            buff=0.45
+        )
+
+        tx_group = VGroup(
+            tx_box,
+            tx_title,
+            tx_content
+        )
+
+        self.play(
+            FadeIn(
+                users_group,
+                shift=RIGHT * 0.2
+            ),
+            run_time=0.8
+        )
+
+        self.wait(1.2)
+
+        self.play(
+            FadeIn(
+                tx_group,
+                shift=LEFT * 0.2
+            ),
+            run_time=0.8
+        )
+
+        key_note = Text(
+            "La clave depende de qué queremos identificar",
+            font_size=27,
+            color=YELLOW
+        ).to_edge(
+            DOWN,
+            buff=0.25
+        )
+
+        self.play(
+            Write(key_note),
+            run_time=0.7
+        )
+
+        self.wait(4.0)
+
+        self.clean_scene(0.7)
+
+        kv_title = Text(
+            "Una Hash Table almacena pares KEY → VALUE",
+            font_size=40,
+            color=BLUE
+        ).to_edge(
+            UP,
+            buff=0.42
+        )
+
+        self.play(
+            Write(kv_title),
+            run_time=0.7
+        )
+
+        key_box = RoundedRectangle(
+            width=3.0,
+            height=1.2,
+            corner_radius=0.1,
+            stroke_color=CYAN,
+            stroke_width=2
+        )
+
+        key_box.shift(
+            LEFT * 3.8
+        )
+
+        key_text = Text(
+            "USER-183",
+            font_size=30,
+            color=CYAN
+        ).move_to(
+            key_box
+        )
+
+        key_label = Text(
+            "KEY",
+            font_size=22,
+            color=YELLOW
+        ).next_to(
+            key_box,
+            UP,
+            buff=0.18
+        )
+
+        profile = self.make_profile_card(
+            "Perfil USER-183",
+            "4",
+            "18,500",
+            "4"
+        )
+
+        profile.shift(
+            RIGHT * 2.7
+        )
+
+        value_label = Text(
+            "VALUE",
+            font_size=22,
+            color=YELLOW
+        ).next_to(
+            profile,
+            UP,
+            buff=0.18
+        )
+
+        kv_arrow = Arrow(
+            key_box.get_right(),
+            profile.get_left(),
+            color=YELLOW,
+            buff=0.3
+        )
+
+        self.play(
+            FadeIn(
+                VGroup(
+                    key_box,
+                    key_text,
+                    key_label
+                )
+            ),
+            GrowArrow(kv_arrow),
+            FadeIn(profile),
+            FadeIn(value_label),
+            run_time=1.0
+        )
+
+        self.wait(4.0)
+
+        self.clean_scene(0.7)
+
+        insert_title = Text(
+            "INSERT: guardar una nueva clave",
+            font_size=40,
+            color=GREEN
+        ).to_edge(
+            UP,
+            buff=0.42
+        )
+
+        self.play(
+            Write(insert_title),
+            run_time=0.7
+        )
+
+        buckets, cells = self.make_bucket_table(
+            count=8,
+            width=4.8,
+            height=0.50,
+            scale=0.93
+        )
+
+        buckets.shift(
+            RIGHT * 3.0
+            + DOWN * 0.12
+        )
+
+        buckets_label = Text(
+            "Hash Table de usuarios",
+            font_size=26,
+            color=BLUE
+        ).next_to(
+            buckets,
+            UP,
+            buff=0.18
+        )
+
+        incoming_tx = self.transaction_row(
+            "TX-8001",
+            "USER-183",
+            "S/3,000",
+            width=5.2
+        )
+
+        incoming_tx.scale(0.88)
+
+        incoming_tx.move_to(
+            LEFT * 3.8
+            + UP * 1.85
+        )
+
+        self.play(
+            FadeIn(buckets),
+            FadeIn(buckets_label),
+            FadeIn(
+                incoming_tx,
+                shift=RIGHT * 0.25
+            ),
+            run_time=0.9
+        )
+
+        self.wait(2.0)
+
+        key = Text(
+            "KEY = USER-183",
+            font_size=28,
+            color=CYAN
+        )
+
+        key.move_to(
+            LEFT * 3.8
+            + UP * 0.65
+        )
+
+        self.play(
+            FadeIn(
+                key,
+                shift=DOWN * 0.1
+            ),
+            run_time=0.6
+        )
+
+        self.wait(1.4)
+
+        hash_box = self.make_hash_box(
+            "183 % 8"
+        )
+
+        hash_box.move_to(
+            LEFT * 3.8
+            + DOWN * 0.55
+        )
+
+        arrow_to_hash = Arrow(
+            key.get_bottom(),
+            hash_box.get_top(),
+            color=YELLOW,
+            buff=0.15
+        )
+
+        self.play(
+            GrowArrow(arrow_to_hash),
+            FadeIn(hash_box),
+            run_time=0.7
+        )
+
+        self.wait(1.6)
+
+        index = Text(
+            "índice = 7",
+            font_size=29,
+            color=YELLOW
+        ).next_to(
+            hash_box,
+            DOWN,
+            buff=0.28
+        )
+
+        self.play(
+            FadeIn(index),
+            run_time=0.55
+        )
+
+        arrow_to_bucket = Arrow(
+            index.get_right(),
+            cells[7].get_left(),
+            color=YELLOW,
+            buff=0.25
+        )
+
+        self.play(
+            GrowArrow(arrow_to_bucket),
+            run_time=0.6
+        )
+
+        bucket_highlight = SurroundingRectangle(
+            cells[7],
+            color=YELLOW,
+            buff=0.04,
+            stroke_width=4
+        )
+
+        self.play(
+            Create(bucket_highlight),
+            run_time=0.45
+        )
+
+        empty = Text(
+            "VACÍO",
+            font_size=19,
+            color=MUTED
+        ).move_to(
+            cells[7]
+        )
+
+        self.play(
+            FadeIn(empty),
+            run_time=0.45
+        )
+
+        not_found = Text(
+            "NOT FOUND",
+            font_size=29,
+            color=RED
+        ).to_edge(
+            DOWN,
+            buff=0.30
+        )
+
+        self.play(
+            Write(not_found),
+            run_time=0.6
+        )
+
+        self.wait(2.1)
+
+        entry = Text(
+            "USER-183 | ops=1 | S/3000",
+            font_size=16,
+            color=CYAN
+        ).move_to(
+            cells[7]
+        )
+
+        self.play(
+            FadeOut(empty),
+            FadeOut(not_found),
+            FadeIn(
+                entry,
+                shift=LEFT * 0.15
+            ),
+            run_time=0.7
+        )
+
+        inserted = Text(
+            "INSERTADO",
+            font_size=29,
+            color=GREEN
+        ).to_edge(
+            DOWN,
+            buff=0.30
+        )
+
+        self.play(
+            Write(inserted),
+            run_time=0.6
+        )
+
+        self.wait(3.0)
+
+        self.clean_scene(0.7)
+
+        search_title = Text(
+            "SEARCH: encontrar una clave existente",
+            font_size=40,
+            color=CYAN
+        ).to_edge(
+            UP,
+            buff=0.42
+        )
+
+        self.play(
+            Write(search_title),
+            run_time=0.7
+        )
+
+        search_buckets, search_cells = self.make_bucket_table(
+            count=8,
+            width=4.8,
+            height=0.50,
+            scale=0.93
+        )
+
+        search_buckets.shift(
+            RIGHT * 3.0
+            + DOWN * 0.12
+        )
+
+        search_table_title = Text(
+            "Hash Table de usuarios",
+            font_size=26,
+            color=BLUE
+        ).next_to(
+            search_buckets,
+            UP,
+            buff=0.18
+        )
+
+        existing_entry = Text(
+            "USER-183 | ops=1 | S/3000",
+            font_size=16,
+            color=CYAN
+        ).move_to(
+            search_cells[7]
+        )
+
+        self.play(
+            FadeIn(search_buckets),
+            FadeIn(search_table_title),
+            FadeIn(existing_entry),
+            run_time=0.8
+        )
+
+        incoming_search = self.transaction_row(
+            "TX-8122",
+            "USER-183",
+            "S/4,500",
+            width=5.2
+        )
+
+        incoming_search.scale(0.88)
+
+        incoming_search.move_to(
+            LEFT * 3.8
+            + UP * 1.8
+        )
+
+        self.play(
+            FadeIn(
+                incoming_search,
+                shift=RIGHT * 0.25
+            ),
+            run_time=0.7
+        )
+
+        self.wait(1.6)
+
+        search_key = Text(
+            "KEY = USER-183",
+            font_size=28,
+            color=CYAN
+        )
+
+        search_key.move_to(
+            LEFT * 3.8
+            + UP * 0.55
+        )
+
+        self.play(
+            FadeIn(search_key),
+            run_time=0.55
+        )
+
+        search_hash = self.make_hash_box(
+            "183 % 8"
+        )
+
+        search_hash.move_to(
+            LEFT * 3.8
+            + DOWN * 0.6
+        )
+
+        self.play(
+            FadeIn(search_hash),
+            run_time=0.6
+        )
+
+        search_index = Text(
+            "índice = 7",
+            font_size=29,
+            color=YELLOW
+        ).next_to(
+            search_hash,
+            DOWN,
+            buff=0.28
+        )
+
+        self.play(
+            FadeIn(search_index),
+            run_time=0.5
+        )
+
+        search_arrow = Arrow(
+            search_index.get_right(),
+            search_cells[7].get_left(),
+            color=YELLOW,
+            buff=0.25
+        )
+
+        self.play(
+            GrowArrow(search_arrow),
+            run_time=0.6
+        )
+
+        search_highlight = SurroundingRectangle(
+            search_cells[7],
+            color=CYAN,
+            buff=0.04,
+            stroke_width=4
+        )
+
+        self.play(
+            Create(search_highlight),
+            run_time=0.45
+        )
+
+        compare = Text(
+            "USER-183 == USER-183",
+            font_size=27,
+            color=WHITE_SOFT
+        ).to_edge(
+            DOWN,
+            buff=0.75
+        )
+
+        self.play(
+            Write(compare),
+            run_time=0.7
+        )
+
+        match = Text(
+            "✓ MATCH  →  FOUND",
+            font_size=30,
+            color=GREEN
+        ).to_edge(
+            DOWN,
+            buff=0.28
+        )
+
+        self.play(
+            FadeIn(
+                match,
+                shift=UP * 0.1
+            ),
+            run_time=0.6
+        )
+
+        self.wait(3.1)
+
+        self.clean_scene(0.7)
+
+        update_title = Text(
+            "UPDATE: modificar el valor asociado",
+            font_size=40,
+            color=PURPLE
+        ).to_edge(
+            UP,
+            buff=0.42
+        )
+
+        self.play(
+            Write(update_title),
+            run_time=0.7
+        )
+
+        update_buckets, update_cells = self.make_bucket_table(
+            count=8,
+            width=4.8,
+            height=0.50,
+            scale=0.93
+        )
+
+        update_buckets.shift(
+            RIGHT * 3.0
+            + DOWN * 0.12
+        )
+
+        update_table_title = Text(
+            "Hash Table de usuarios",
+            font_size=26,
+            color=BLUE
+        ).next_to(
+            update_buckets,
+            UP,
+            buff=0.18
+        )
+
+        update_entry = Text(
+            "USER-183 | ops=1 | S/3000",
+            font_size=16,
+            color=CYAN
+        ).move_to(
+            update_cells[7]
+        )
+
+        self.play(
+            FadeIn(update_buckets),
+            FadeIn(update_table_title),
+            FadeIn(update_entry),
+            run_time=0.8
+        )
+
+        old_label = Text(
+            "VALOR ACTUAL",
+            font_size=22,
+            color=MUTED
+        )
+
+        old_label.move_to(
+            LEFT * 3.8
+            + UP * 1.55
+        )
+
+        old_state = Text(
+            "ops = 1   |   total = S/3000",
+            font_size=26,
+            color=CYAN
+        )
+
+        old_state.move_to(
+            LEFT * 3.8
+            + UP * 0.85
+        )
+
+        self.play(
+            FadeIn(old_label),
+            FadeIn(old_state),
+            run_time=0.6
+        )
+
+        update_word = Text(
+            "UPDATE",
+            font_size=31,
+            color=PURPLE
+        )
+
+        update_word.move_to(
+            LEFT * 3.8
+        )
+
+        down_arrow = Arrow(
+            old_state.get_bottom(),
+            update_word.get_top(),
+            color=YELLOW,
+            buff=0.18
+        )
+
+        self.play(
+            GrowArrow(down_arrow),
+            FadeIn(update_word),
+            run_time=0.7
+        )
+
+        new_label = Text(
+            "NUEVO VALOR",
+            font_size=22,
+            color=MUTED
+        )
+
+        new_label.move_to(
+            LEFT * 3.8
+            + DOWN * 0.8
+        )
+
+        new_state = Text(
+            "ops = 2   |   total = S/7500",
+            font_size=26,
+            color=GREEN
+        )
+
+        new_state.move_to(
+            LEFT * 3.8
+            + DOWN * 1.45
+        )
+
+        self.play(
+            FadeIn(new_label),
+            FadeIn(new_state),
+            run_time=0.7
+        )
+
+        new_bucket_entry = Text(
+            "USER-183 | ops=2 | S/7500",
+            font_size=16,
+            color=GREEN
+        ).move_to(
+            update_cells[7]
+        )
+
+        bucket_flash = SurroundingRectangle(
+            update_cells[7],
+            color=GREEN,
+            buff=0.04,
+            stroke_width=4
+        )
+
+        self.play(
+            Create(bucket_flash),
+            Transform(
+                update_entry,
+                new_bucket_entry
+            ),
+            run_time=0.8
+        )
+
+        update_complexity = Text(
+            "Actualización promedio: O(1)",
+            font_size=27,
+            color=GREEN
+        ).to_edge(
+            DOWN,
+            buff=0.22
+        )
+
+        self.play(
+            Write(update_complexity),
+            run_time=0.6
+        )
+
+        self.wait(3.2)
+
+        self.clean_scene(0.7)
+
+        collision_title = Text(
+            "Dos claves pueden producir el mismo índice",
+            font_size=39,
+            color=WHITE_SOFT
+        ).to_edge(
+            UP,
+            buff=0.42
+        )
+
+        self.play(
+            Write(collision_title),
+            run_time=0.7
+        )
+
+        collision_buckets, collision_cells = self.make_bucket_table(
+            count=8,
+            width=4.8,
+            height=0.50,
+            scale=0.93
+        )
+
+        collision_buckets.shift(
+            RIGHT * 3.0
+            + DOWN * 0.12
+        )
+
+        collision_table_title = Text(
+            "Hash Table",
+            font_size=26,
+            color=BLUE
+        ).next_to(
+            collision_buckets,
+            UP,
+            buff=0.18
+        )
+
+        stored_183 = Text(
+            "USER-183",
+            font_size=17,
+            color=CYAN
+        ).move_to(
+            collision_cells[7]
+        )
+
+        self.play(
+            FadeIn(collision_buckets),
+            FadeIn(collision_table_title),
+            FadeIn(stored_183),
+            run_time=0.8
+        )
+
+        user_191 = Text(
+            "USER-191",
+            font_size=31,
+            color=PURPLE
+        )
+
+        user_191.move_to(
+            LEFT * 3.8
+            + UP * 1.55
+        )
+
+        self.play(
+            FadeIn(user_191),
+            run_time=0.5
+        )
+
+        collision_hash = self.make_hash_box(
+            "191 % 8"
+        )
+
+        collision_hash.move_to(
+            LEFT * 3.8
+            + UP * 0.2
+        )
+
+        self.play(
+            FadeIn(collision_hash),
+            run_time=0.6
+        )
+
+        collision_index = Text(
+            "índice = 7",
+            font_size=29,
+            color=YELLOW
+        )
+
+        collision_index.move_to(
+            LEFT * 3.8
+            + DOWN * 1.05
+        )
+
+        self.play(
+            FadeIn(collision_index),
+            run_time=0.5
+        )
+
+        collision_arrow = Arrow(
+            collision_index.get_right(),
+            collision_cells[7].get_left(),
+            color=RED,
+            buff=0.25
+        )
+
+        self.play(
+            GrowArrow(collision_arrow),
+            run_time=0.6
+        )
+
+        collision_highlight = SurroundingRectangle(
+            collision_cells[7],
+            color=RED,
+            buff=0.04,
+            stroke_width=4
+        )
+
+        self.play(
+            Create(collision_highlight),
+            run_time=0.45
+        )
+
+        collision_text = Text(
+            "COLISIÓN",
+            font_size=36,
+            color=RED
+        ).to_edge(
+            DOWN,
+            buff=0.28
+        )
+
+        self.play(
+            Write(collision_text),
+            run_time=0.6
+        )
+
+        self.wait(3.2)
+
+        self.clean_scene(0.7)
+
+        chain_title = Text(
+            "Chaining: varias entradas pueden compartir un bucket",
+            font_size=36,
+            color=GREEN
+        ).to_edge(
+            UP,
+            buff=0.42
+        )
+
+        self.play(
+            Write(chain_title),
+            run_time=0.7
+        )
+
+        bucket_name = Text(
+            "Bucket 7",
+            font_size=27,
+            color=MUTED
+        )
+
+        bucket_name.move_to(
+            LEFT * 4.8
+        )
+
+        node_183_box = RoundedRectangle(
+            width=2.8,
+            height=1.0,
+            corner_radius=0.1,
+            stroke_color=CYAN,
+            stroke_width=2,
+            fill_color="#111C30",
+            fill_opacity=1
+        )
+
+        node_183_box.move_to(
+            LEFT * 1.6
+        )
+
+        node_183_text = Text(
+            "USER-183",
+            font_size=22,
+            color=CYAN
+        ).move_to(
+            node_183_box
+        )
+
+        node_183 = VGroup(
+            node_183_box,
+            node_183_text
+        )
+
+        node_191_box = RoundedRectangle(
+            width=2.8,
+            height=1.0,
+            corner_radius=0.1,
+            stroke_color=PURPLE,
+            stroke_width=2,
+            fill_color="#111C30",
+            fill_opacity=1
+        )
+
+        node_191_box.move_to(
+            RIGHT * 2.2
+        )
+
+        node_191_text = Text(
+            "USER-191",
+            font_size=22,
+            color=PURPLE
+        ).move_to(
+            node_191_box
+        )
+
+        node_191 = VGroup(
+            node_191_box,
+            node_191_text
+        )
+
+        chain_arrow = Arrow(
+            node_183.get_right(),
+            node_191.get_left(),
+            color=YELLOW,
+            buff=0.15
+        )
+
+        self.play(
+            FadeIn(bucket_name),
+            FadeIn(node_183),
+            run_time=0.7
+        )
+
+        self.play(
+            GrowArrow(chain_arrow),
+            FadeIn(node_191),
+            run_time=0.8
+        )
+
+        self.wait(2.7)
+
+        search_chain_title = Text(
+            "Buscar USER-191 dentro del chaining",
+            font_size=36,
+            color=WHITE_SOFT
+        ).to_edge(
+            UP,
+            buff=0.42
+        )
+
+        self.play(
+            Transform(
+                chain_title,
+                search_chain_title
+            ),
+            run_time=0.7
+        )
+
+        pointer = Triangle(
+            color=YELLOW,
+            fill_color=YELLOW,
+            fill_opacity=1
+        )
+
+        pointer.scale(0.18)
+        pointer.rotate(-PI / 2)
+
+        pointer.next_to(
+            node_183,
+            UP,
+            buff=0.22
+        )
+
+        compare_183 = Text(
+            "USER-191 ≠ USER-183",
+            font_size=27,
+            color=RED
+        ).to_edge(
+            DOWN,
+            buff=0.30
+        )
+
+        self.play(
+            FadeIn(pointer),
+            FadeIn(compare_183),
+            run_time=0.6
+        )
+
+        self.wait(2.2)
+
+        pointer_target = pointer.copy()
+
+        pointer_target.next_to(
+            node_191,
+            UP,
+            buff=0.22
+        )
+
+        compare_191 = Text(
+            "USER-191 = USER-191  ✓",
+            font_size=27,
+            color=GREEN
+        ).to_edge(
+            DOWN,
+            buff=0.30
+        )
+
+        self.play(
+            Transform(
+                pointer,
+                pointer_target
+            ),
+            Transform(
+                compare_183,
+                compare_191
+            ),
+            run_time=0.8
+        )
+
+        found = Text(
+            "FOUND",
+            font_size=33,
+            color=GREEN
+        ).next_to(
+            node_191,
+            DOWN,
+            buff=0.4
+        )
+
+        self.play(
+            FadeIn(found),
+            run_time=0.55
+        )
+
+        self.wait(3.0)
+
+        self.clean_scene(0.7)
+
+        case1_title = Text(
+            "Caso 1: comportamiento inusual",
+            font_size=42,
+            color=YELLOW
+        ).to_edge(
+            UP,
+            buff=0.42
+        )
+
+        self.play(
+            Write(case1_title),
+            run_time=0.7
+        )
+
+        user_buckets, user_cells = self.make_bucket_table(
+            count=8,
+            width=5.0,
+            height=0.52,
+            scale=0.86
+        )
+
+        user_buckets.shift(
+            RIGHT * 3.15
+            + DOWN * 0.10
+        )
+
+        user_table_title = Text(
+            "Hash Table de usuarios",
+            font_size=25,
+            color=BLUE
+        ).next_to(
+            user_buckets,
+            UP,
+            buff=0.15
+        )
+
+        user_entry = Text(
+            "USER-183 | 0 ops | S/0 | 0 nuevas",
+            font_size=15,
+            color=CYAN
+        ).move_to(
+            user_cells[7]
+        )
+
+        self.play(
+            FadeIn(user_buckets),
+            FadeIn(user_table_title),
+            FadeIn(user_entry),
+            run_time=0.8
+        )
+
+        operations = [
+            (
+                "TX-8001",
+                "S/3,000",
+                "1",
+                "3,000",
+                "1"
+            ),
+            (
+                "TX-8122",
+                "S/4,500",
+                "2",
+                "7,500",
+                "2"
+            ),
+            (
+                "TX-8350",
+                "S/6,000",
+                "3",
+                "13,500",
+                "3"
+            ),
+            (
+                "TX-9004",
+                "S/5,000",
+                "4",
+                "18,500",
+                "4"
+            )
+        ]
+
+        for i, data in enumerate(operations):
+
+            (
+                tx_id,
+                amount,
+                count,
+                total,
+                accounts
+            ) = data
+
+
+            tx = self.transaction_row(
+                tx_id,
+                "USER-183",
+                amount,
+                width=5.4
+            )
+
+            tx.scale(0.90)
+
+            tx.move_to(
+                LEFT * 3.65
+                + UP * 1.55
+            )
+
+            self.play(
+                FadeIn(
+                    tx,
+                    shift=RIGHT * 0.25
+                ),
+                run_time=0.6
+            )
+
+
+            key_step = Text(
+                "KEY = USER-183",
+                font_size=25,
+                color=CYAN
+            )
+
+            key_step.move_to(
+                LEFT * 3.65
+                + UP * 0.40
+            )
+
+            self.play(
+                FadeIn(key_step),
+                run_time=0.45
+            )
+
+            hash_step = Text(
+                "183 % 8 = 7",
+                font_size=24,
+                color=PURPLE
+            )
+
+            hash_step.move_to(
+                LEFT * 3.65
+                + DOWN * 0.45
+            )
+
+            self.play(
+                FadeIn(hash_step),
+                run_time=0.45
+            )
+
+
+            bucket_flash = SurroundingRectangle(
+                user_cells[7],
+                color=YELLOW,
+                buff=0.03,
+                stroke_width=3
+            )
+
+            self.play(
+                Create(bucket_flash),
+                run_time=0.4
+            )
+
+
+            action = Text(
+                "SEARCH → UPDATE",
+                font_size=24,
+                color=GREEN
+            )
+
+            action.move_to(
+                LEFT * 3.65
+                + DOWN * 1.45
+            )
+
+            self.play(
+                FadeIn(action),
+                run_time=0.45
+            )
+
+            new_entry = Text(
+                f"USER-183 | {count} ops | "
+                f"S/{total} | {accounts} nuevas",
+                font_size=15,
+                color=GREEN
+            )
+
+            new_entry.move_to(
+                user_cells[7]
+            )
+
+            self.play(
+                Transform(
+                    user_entry,
+                    new_entry
+                ),
+                run_time=0.65
+            )
+
+            if i < 3:
+                self.wait(1.35)
+            else:
+                self.wait(2.0)
+
+            self.play(
+                FadeOut(tx),
+                FadeOut(key_step),
+                FadeOut(hash_step),
+                FadeOut(bucket_flash),
+                FadeOut(action),
+                run_time=0.45
+            )
+
+        final_bucket_highlight = SurroundingRectangle(
+            user_cells[7],
+            color=GREEN,
+            buff=0.03,
+            stroke_width=4
+        )
+
+        self.play(
+            Create(final_bucket_highlight),
+            run_time=0.45
+        )
+
+        self.wait(2.2)
+
+        self.clean_scene(0.7)
+
+
+        rules_scene_title = Text(
+            "La Hash Table entrega el contexto a las reglas",
+            font_size=37,
+            color=WHITE_SOFT
+        ).to_edge(
+            UP,
+            buff=0.42
+        )
+
+        self.play(
+            Write(rules_scene_title),
+            run_time=0.7
+        )
+
+        profile_card = self.make_profile_card(
+            "USER-183",
+            "4",
+            "18,500",
+            "4"
+        )
+
+        profile_card.shift(
+            LEFT * 3.25
+        )
+
+        rules_box = RoundedRectangle(
+            width=5.2,
+            height=3.3,
+            corner_radius=0.12,
+            stroke_color=YELLOW,
+            stroke_width=2,
+            fill_color="#111C30",
+            fill_opacity=1
+        )
+
+        rules_box.shift(
+            RIGHT * 3.2
+        )
+
+        rules_title = Text(
+            "Reglas de monitoreo",
+            font_size=25,
+            color=YELLOW
+        ).next_to(
+            rules_box.get_top(),
+            DOWN,
+            buff=0.32
+        )
+
+        rules_list = VGroup(
+            Text(
+                "✓ Muchas operaciones en poco tiempo",
+                font_size=19,
+                color=GREEN
+            ),
+            Text(
+                "✓ Monto reciente inusual",
+                font_size=19,
+                color=GREEN
+            ),
+            Text(
+                "✓ Varias cuentas nuevas",
+                font_size=19,
+                color=GREEN
+            )
+        ).arrange(
+            DOWN,
+            aligned_edge=LEFT,
+            buff=0.30
+        )
+
+        rules_list.next_to(
+            rules_title,
+            DOWN,
+            buff=0.42
+        )
+
+        rules_group = VGroup(
+            rules_box,
+            rules_title,
+            rules_list
+        )
+
+        decision_arrow = Arrow(
+            profile_card.get_right(),
+            rules_box.get_left(),
+            color=YELLOW,
+            buff=0.25
+        )
+
+        self.play(
+            FadeIn(profile_card),
+            run_time=0.7
+        )
+
+        self.play(
+            GrowArrow(decision_arrow),
+            FadeIn(rules_group),
+            run_time=0.8
+        )
+
+        self.wait(2.3)
+
+        unusual_result = Text(
+            "PATRÓN INUSUAL",
+            font_size=35,
+            color=RED
+        ).to_edge(
+            DOWN,
+            buff=0.26
+        )
+
+        self.play(
+            Write(unusual_result),
+            run_time=0.7
+        )
+
+        self.wait(2.8)
+
+        disclaimer = Text(
+            "La Hash Table no decide fraude: "
+            "permite acceder al contexto rápidamente",
+            font_size=22,
+            color=MUTED
+        )
+
+        disclaimer.next_to(
+            unusual_result,
+            UP,
+            buff=0.25
+        )
+
+        self.play(
+            FadeIn(disclaimer),
+            run_time=0.6
+        )
+
+        self.wait(3.0)
+
+        self.clean_scene(0.7)
+
+        case2_title = Text(
+            "Caso 2: evitar procesar dos veces la misma operación",
+            font_size=37,
+            color=RED
+        ).to_edge(
+            UP,
+            buff=0.42
+        )
+
+        self.play(
+            Write(case2_title),
+            run_time=0.7
+        )
+
+        first_tx_buckets, first_tx_cells = self.make_bucket_table(
+            count=8,
+            width=4.9,
+            height=0.52,
+            scale=0.87
+        )
+
+        first_tx_buckets.shift(
+            RIGHT * 3.15
+            + DOWN * 0.08
+        )
+
+        first_table_title = Text(
+            "Hash Table de transacciones",
+            font_size=25,
+            color=PURPLE
+        ).next_to(
+            first_tx_buckets,
+            UP,
+            buff=0.15
+        )
+
+        self.play(
+            FadeIn(first_tx_buckets),
+            FadeIn(first_table_title),
+            run_time=0.7
+        )
+
+        first_event = self.transaction_row(
+            "TX-4182",
+            "USER-18",
+            "S/350",
+            width=5.2
+        )
+
+        first_event.scale(0.88)
+
+        first_event.move_to(
+            LEFT * 3.75
+            + UP * 1.60
+        )
+
+        self.play(
+            FadeIn(
+                first_event,
+                shift=RIGHT * 0.25
+            ),
+            run_time=0.7
+        )
+
+        first_key = Text(
+            "KEY = TX-4182",
+            font_size=27,
+            color=PURPLE
+        )
+
+        first_key.move_to(
+            LEFT * 3.75
+            + UP * 0.45
+        )
+
+        self.play(
+            FadeIn(first_key),
+            run_time=0.5
+        )
+
+        first_hash = self.make_hash_box(
+            "4182 % 8"
+        )
+
+        first_hash.move_to(
+            LEFT * 3.75
+            + DOWN * 0.70
+        )
+
+        self.play(
+            FadeIn(first_hash),
+            run_time=0.6
+        )
+
+        first_index = Text(
+            "índice = 6",
+            font_size=28,
+            color=YELLOW
+        )
+
+        first_index.move_to(
+            LEFT * 3.75
+            + DOWN * 1.75
+        )
+
+        self.play(
+            FadeIn(first_index),
+            run_time=0.5
+        )
+
+        first_arrow = Arrow(
+            first_index.get_right(),
+            first_tx_cells[6].get_left(),
+            color=YELLOW,
+            buff=0.25
+        )
+
+        self.play(
+            GrowArrow(first_arrow),
+            run_time=0.6
+        )
+
+        first_highlight = SurroundingRectangle(
+            first_tx_cells[6],
+            color=YELLOW,
+            buff=0.03,
+            stroke_width=4
+        )
+
+        self.play(
+            Create(first_highlight),
+            run_time=0.45
+        )
+
+        empty_tx = Text(
+            "VACÍO",
+            font_size=18,
+            color=MUTED
+        ).move_to(
+            first_tx_cells[6]
+        )
+
+        self.play(
+            FadeIn(empty_tx),
+            run_time=0.45
+        )
+
+        decision_insert = Text(
+            "NOT FOUND  →  INSERT",
+            font_size=28,
+            color=GREEN
+        ).to_edge(
+            DOWN,
+            buff=0.28
+        )
+
+        self.play(
+            Write(decision_insert),
+            run_time=0.6
+        )
+
+        self.wait(2.2)
+
+        processed_entry = Text(
+            "TX-4182 | PROCESADA",
+            font_size=16,
+            color=CYAN
+        ).move_to(
+            first_tx_cells[6]
+        )
+
+        self.play(
+            FadeOut(empty_tx),
+            FadeIn(processed_entry),
+            run_time=0.7
+        )
+
+        processed_message = Text(
+            "TX-4182 queda registrada como PROCESADA",
+            font_size=25,
+            color=GREEN
+        ).to_edge(
+            DOWN,
+            buff=0.28
+        )
+
+        self.play(
+            Transform(
+                decision_insert,
+                processed_message
+            ),
+            run_time=0.7
+        )
+
+        self.wait(3.0)
+
+        self.clean_scene(0.7)
+
+        retry_title = Text(
+            "El mismo evento TX-4182 llega nuevamente",
+            font_size=38,
+            color=WHITE_SOFT
+        ).to_edge(
+            UP,
+            buff=0.42
+        )
+
+        self.play(
+            Write(retry_title),
+            run_time=0.7
+        )
+
+        retry_buckets, retry_cells = self.make_bucket_table(
+            count=8,
+            width=4.9,
+            height=0.52,
+            scale=0.87
+        )
+
+        retry_buckets.shift(
+            RIGHT * 3.15
+            + DOWN * 0.08
+        )
+
+        retry_table_title = Text(
+            "Hash Table de transacciones",
+            font_size=25,
+            color=PURPLE
+        ).next_to(
+            retry_buckets,
+            UP,
+            buff=0.15
+        )
+
+        retry_entry = Text(
+            "TX-4182 | PROCESADA",
+            font_size=16,
+            color=CYAN
+        ).move_to(
+            retry_cells[6]
+        )
+
+        self.play(
+            FadeIn(retry_buckets),
+            FadeIn(retry_table_title),
+            FadeIn(retry_entry),
+            run_time=0.8
+        )
+
+        retry_event = self.transaction_row(
+            "TX-4182",
+            "USER-18",
+            "S/350",
+            width=5.2
+        )
+
+        retry_event.scale(0.88)
+
+        retry_event.move_to(
+            LEFT * 3.75
+            + UP * 1.55
+        )
+
+        self.play(
+            FadeIn(
+                retry_event,
+                shift=RIGHT * 0.25
+            ),
+            run_time=0.7
+        )
+
+        retry_hash = self.make_hash_box(
+            "4182 % 8"
+        )
+
+        retry_hash.move_to(
+            LEFT * 3.75
+            + UP * 0.20
+        )
+
+        retry_index = Text(
+            "índice = 6",
+            font_size=28,
+            color=YELLOW
+        )
+
+        retry_index.move_to(
+            LEFT * 3.75
+            + DOWN * 0.85
+        )
+
+        self.play(
+            FadeIn(retry_hash),
+            run_time=0.6
+        )
+
+        self.play(
+            FadeIn(retry_index),
+            run_time=0.5
+        )
+
+        retry_arrow = Arrow(
+            retry_index.get_right(),
+            retry_cells[6].get_left(),
+            color=YELLOW,
+            buff=0.25
+        )
+
+        self.play(
+            GrowArrow(retry_arrow),
+            run_time=0.6
+        )
+
+        retry_highlight = SurroundingRectangle(
+            retry_cells[6],
+            color=RED,
+            buff=0.03,
+            stroke_width=4
+        )
+
+        self.play(
+            Create(retry_highlight),
+            run_time=0.45
+        )
+
+        compare_tx = Text(
+            "TX-4182 == TX-4182",
+            font_size=27,
+            color=WHITE_SOFT
+        )
+
+        compare_tx.move_to(
+            LEFT * 3.75
+            + DOWN * 1.75
+        )
+
+        self.play(
+            Write(compare_tx),
+            run_time=0.7
+        )
+
+        match_tx = Text(
+            "✓ MATCH",
+            font_size=29,
+            color=GREEN
+        )
+
+        match_tx.next_to(
+            compare_tx,
+            DOWN,
+            buff=0.22
+        )
+
+        self.play(
+            FadeIn(match_tx),
+            run_time=0.5
+        )
+
+        self.wait(2.2)
+
+        found_processed = Text(
+            "FOUND → YA PROCESADA",
+            font_size=31,
+            color=RED
+        ).to_edge(
+            DOWN,
+            buff=0.28
+        )
+
+        self.play(
+            Write(found_processed),
+            run_time=0.7
+        )
+
+        self.wait(2.2)
+
+        no_reprocess = Text(
+            "NO VOLVER A PROCESAR",
+            font_size=37,
+            color=GREEN
+        ).to_edge(
+            DOWN,
+            buff=0.28
+        )
+
+        self.play(
+            Transform(
+                found_processed,
+                no_reprocess
+            ),
+            run_time=0.8
+        )
+
+        self.wait(3.2)
+
+        self.clean_scene(0.7)
+
+        summary_title = Text(
+            "Operaciones mostradas",
+            font_size=45,
+            color=BLUE
+        ).to_edge(
+            UP,
+            buff=0.42
+        )
+
+        self.play(
+            Write(summary_title),
+            run_time=0.7
+        )
+
+        insert_card = self.make_operation_card(
+            "INSERT",
+            "guardar una clave",
+            "O(1) promedio",
+            GREEN
+        )
+
+        search_card = self.make_operation_card(
+            "SEARCH",
+            "encontrar una clave",
+            "O(1) promedio",
+            CYAN
+        )
+
+        update_card = self.make_operation_card(
+            "UPDATE",
+            "modificar un valor",
+            "O(1) promedio",
+            PURPLE
+        )
+
+        chain_card = self.make_operation_card(
+            "CHAINING",
+            "resolver colisiones",
+            "recorrer bucket si hace falta",
+            YELLOW
+        )
+
+        cards = VGroup(
+            insert_card,
+            search_card,
+            update_card,
+            chain_card
+        )
+
+        cards.arrange_in_grid(
+            rows=2,
+            cols=2,
+            buff=0.45
+        )
+
+        cards.scale(0.92)
+
+        cards.shift(
+            DOWN * 0.2
+        )
+
+        self.play(
+            LaggedStart(
+                *[
+                    FadeIn(
+                        card,
+                        shift=UP * 0.15
+                    )
+                    for card in cards
+                ],
+                lag_ratio=0.2
+            ),
+            run_time=1.8
+        )
+
+        self.wait(4.0)
+
+        self.clean_scene(0.7)
+
+        final_title = Text(
+            "HASH TABLES",
+            font_size=68,
+            color=BLUE
+        )
+
+        final_subtitle = Text(
+            "Acceso rápido a información en sistemas de transacciones",
+            font_size=29,
+            color=WHITE_SOFT
+        ).next_to(
+            final_title,
+            DOWN,
+            buff=0.30
+        )
+
+        final_note = Text(
+            "USER-ID → perfiles   |   "
+            "TX-ID → evitar reprocesamiento",
+            font_size=23,
+            color=MUTED
+        ).next_to(
+            final_subtitle,
+            DOWN,
+            buff=0.30
+        )
+
+        final_authors = Text(
+            "Itta Saavedra  •  Joaquin Llallire",
+            font_size=23,
+            color=YELLOW
+        ).next_to(
+            final_note,
+            DOWN,
+            buff=0.40
+        )
+
+        self.play(
+            GrowFromCenter(final_title),
+            run_time=0.8
+        )
+
+        self.play(
+            FadeIn(final_subtitle),
+            FadeIn(final_note),
+            FadeIn(final_authors),
+            run_time=0.7
+        )
+
+        self.wait(4.0)
