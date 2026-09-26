@@ -25,7 +25,7 @@ Se presentan dos casos de uso reales en sistemas financieros:
 
 ## 🎥 Video demo
 
-[Ver video en YouTube / Drive / repositorio](#)
+https://youtu.be/EA7c30ejOeI
 
 > Duración aproximada: 3 minutos.
 
