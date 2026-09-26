@@ -139,8 +139,8 @@ Usando el **TX-ID** como clave, el sistema verifica si una transacción ya fue p
 
 | Integrante | Contribución |
 |------------|--------------|
-| **Itta Saavedra** | Diseño del guion, animación de INSERT, SEARCH, UPDATE, colisiones y chaining |
-| **Joaquin Llallire** | Diseño del guion, animación de casos de uso, montaje final del video |
+| **Itta Saavedra** | Diseño del guion, animación de casos de uso, montaje final del video  |
+| **Joaquin Llallire** | Diseño del guion, animación de INSERT, SEARCH, UPDATE, colisiones y chaining |
 
 ---
 
