@@ -40,7 +40,7 @@ https://youtu.be/EA7c30ejOeI
 
 ### Instalación de dependencias
 
-```bash
+
 pip install manim
 
 ### Para verificar la instalación:
