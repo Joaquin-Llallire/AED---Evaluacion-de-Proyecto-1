@@ -48,7 +48,7 @@ manim --version
 - Si no funciona, usar:
 python -m manim --version
 
-## 📂 Estructura del proyecto
+### 📂 Estructura del proyecto
 proyecto/
 ├── hash_transactions.py    # Código principal de la animación Manim
 ├── README.md               # Este archivo
