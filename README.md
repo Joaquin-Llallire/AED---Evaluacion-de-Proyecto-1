@@ -49,11 +49,13 @@ manim --version
 python -m manim --version
 
 ### 📂 Estructura del proyecto
+text
 proyecto/
 ├── hash_transactions.py    # Código principal de la animación Manim
 ├── README.md               # Este archivo
 ├── requirements.txt        # Dependencias del proyecto
 └── media/                  # Video generado (opcional)
+
 
 ##🚀 Cómo ejecutar
 1. Clonar el repositorio:
