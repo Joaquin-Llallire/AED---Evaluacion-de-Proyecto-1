@@ -39,33 +39,33 @@ https://youtu.be/EA7c30ejOeI
 
 ### Instalación de dependencias
 
-\`\`\`bash
+```bash
 pip install manim
-\`\`\`
+```
 
 ### Para verificar la instalación
 
-\`\`\`bash
+```bash
 manim --version
-\`\`\`
+```
 
 Si no funciona, usar:
 
-\`\`\`bash
+```bash
 python -m manim --version
-\`\`\`
+```
 
 ---
 
 ## 📂 Estructura del proyecto
 
-\`\`\`text
+```text
 proyecto/
 ├── hash_transactions.py    # Código principal de la animación Manim
 ├── README.md               # Este archivo
 ├── requirements.txt        # Dependencias del proyecto
 └── media/                  # Video generado (opcional)
-\`\`\`
+```
 
 ---
 
@@ -73,29 +73,28 @@ proyecto/
 
 1. **Clonar el repositorio:**
 
-\`\`\`bash
-git clone https://github.com/tu-usuario/tu-repo.git
-cd tu-repo
-\`\`\`
+```bash
+git clone https://github.com/joaquin-llallire/AED---Evaluacion-de-Proyecto-1.git
+cd AED---Evaluacion-de-Proyecto-1
+```
 
 2. **Ejecutar la animación en calidad media (prueba rápida):**
 
-\`\`\`bash
+```bash
 python -m manim -pql hash_transactions.py HashTransactions
-\`\`\`
+```
 
 3. **Generar el video en alta calidad (1080p):**
 
-\`\`\`bash
+```bash
 python -m manim -pqh hash_transactions.py HashTransactions
-\`\`\`
+```
 
 4. **Convertir a formato MPEG (si es necesario):**
 
-\`\`\`bash
-ffmpeg -i media/videos/hash_transactions/1080p60/HashTransactions.mp4 \
-       -c:v mpeg2video -q:v 2 HashTransactions.mpeg
-\`\`\`
+```bash
+ffmpeg -i media/videos/hash_transactions/1080p60/HashTransactions.mp4 -c:v mpeg2video -q:v 2 HashTransactions.mpeg
+```
 
 ---
 
