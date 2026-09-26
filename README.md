@@ -57,7 +57,7 @@ proyecto/
 └── media/                  # Video generado (opcional)
 
 
-##🚀 Cómo ejecutar
+###🚀 Cómo ejecutar
 1. Clonar el repositorio:
 git clone https://github.com/tu-usuario/tu-repo.git
 cd tu-repo
